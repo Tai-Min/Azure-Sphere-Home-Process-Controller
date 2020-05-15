@@ -1,0 +1,20 @@
+﻿{
+  "version": "0.2.1",
+  "defaults": {},
+  "configurations": [
+    {
+      "type": "azurespheredbg",
+      "name": "GDB Debugger (RTCore)",
+      "project": "CMakeLists.txt",
+      "inheritEnvironments": [
+        "AzureSphere"
+      ],
+      "customLauncher": "AzureSphereLaunchOptions",
+      "workingDirectory": "${workspaceRoot}",
+      "applicationPath": "${debugInfo.target}",
+      "imagePath": "${debugInfo.targetImage}",
+      "targetCore": "RTCore",
+      "partnerComponents": [ "2af2765c-0d65-4e68-aa92-0336d416e335" ]
+    }
+  ]
+}

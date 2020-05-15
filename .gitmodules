@@ -1,0 +1,3 @@
+[submodule "Controller/code/Azure_Controller/Azure_Controller/RealTimeCore/thirdparty/mt3620_m4_software"]
+	path = Controller/code/Azure_Controller/Azure_Controller/RealTimeCore/thirdparty/mt3620_m4_software
+	url = https://github.com/MediaTek-Labs/mt3620_m4_software
