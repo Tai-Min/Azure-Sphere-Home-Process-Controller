@@ -18,8 +18,9 @@
 #include "common.h"
 #include "buttons.h"
 #include "config.h"
+#include "mailbox.h"
 
-#define APP_STACK_SIZE_BYTES (1024 / 8)
+#define APP_STACK_SIZE_BYTES (1024 / 4)
 
 static const uint8_t uart_port_num = OS_HAL_UART_PORT0;
 
@@ -54,8 +55,9 @@ _Noreturn void RTCoreMain(void)
 	xTaskCreate(KNOB_knobTask, "Knob Task", APP_STACK_SIZE_BYTES, NULL, 0, NULL);
 	xTaskCreate(LED_ledTask, "LED Task", APP_STACK_SIZE_BYTES, NULL, 0, NULL);
 	xTaskCreate(buttonTask, "Button Task", APP_STACK_SIZE_BYTES, NULL, 0, NULL);
-	xTaskCreate(SEG_displayTask, "Display Task", APP_STACK_SIZE_BYTES, NULL, 1, NULL);
+	xTaskCreate(SEG_displayTask, "Display Task", APP_STACK_SIZE_BYTES, NULL, 0, NULL);
 	xTaskCreate(CONTROL_controlTask, "Control Task", APP_STACK_SIZE_BYTES * 2, NULL, 7, NULL);
+	xTaskCreate(MAILBOX_mailboxTask, "Mailbox Task", APP_STACK_SIZE_BYTES * 2, NULL, 5, NULL);
 
 	vTaskStartScheduler();
 	for (;;)

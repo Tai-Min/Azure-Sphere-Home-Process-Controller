@@ -4,8 +4,29 @@
 cmake_minimum_required (VERSION 3.8)
 project (Azure_Controller_HighLevelCore C)
 
+# MQTT-C library
+#add_library(mqttc STATIC 
+#    thirdparty/MQTT-C/src/mqtt_pal.c
+#    thirdparty/MQTT-C/src/mqtt.c
+#)
+
+#TARGET_INCLUDE_DIRECTORIES(./thirdparty/MQTT-C/inc)
+
+
 # Create executable
-add_executable (${PROJECT_NAME} main.c)
+add_compile_definitions(__unix__)
+add_compile_definitions(__THROW)
+add_executable (${PROJECT_NAME} 
+                main.c 
+                ./thirdparty/MQTT-C/src/mqtt.c
+                ./thirdparty/MQTT-C/src/mqtt_pal.c
+                "eventloop_timer_utilities.c" "mqtt_utilities.c" "common.c" "http_utilities.c" "mailbox_utilities.c" "network_utilities.c")
+
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC
+                           ./thirdparty/MQTT-C/include
+                           ./)
+
+
 target_link_libraries (${PROJECT_NAME} applibs pthread gcc_s c)
 
 # Add MakeImage post-build command

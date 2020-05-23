@@ -1,3 +1,6 @@
 [submodule "Controller/code/Azure_Controller/Azure_Controller/RealTimeCore/thirdparty/mt3620_m4_software"]
 	path = Controller/code/Azure_Controller/Azure_Controller/RealTimeCore/thirdparty/mt3620_m4_software
 	url = https://github.com/MediaTek-Labs/mt3620_m4_software
+[submodule "Controller/code/Azure_Controller/Azure_Controller/HighLevelCore/thirdparty/MQTT-C"]
+	path = Controller/code/Azure_Controller/Azure_Controller/HighLevelCore/thirdparty/MQTT-C
+	url = https://github.com/LiamBindle/MQTT-C

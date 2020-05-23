@@ -12,88 +12,120 @@
 
 #define CONTROL_LOOP_SAMPLING_TIME 50
 
-struct TwoState {
+/*
+* @brief Internal state of two state controller.
+*/
+struct TwoStateInternalState {
 	bool isOn;
 };
 
-struct PID {
+/*
+* @brief Internal state of pid controller.
+*/
+struct PIDInternalState {
 	double integratorValue;
 	double previousError;
 };
 
-union Controller {
-	struct TwoState twoState;
-	struct PID pid;
+/*
+* @brief Union that holds internal state of every available controller.
+*/
+static union ControllerInternalState {
+	struct TwoStateInternalState twoState;
+	struct PIDInternalState pid;
 };
 
-static union Controller controller;
+static union ControllerInternalState controller;
 
 /* external functions */
-void CONTROL_controlTask();
+void CONTROL_controlTask(void* pParams);
 
 /* helpers */
+/*
+* @brief Reads value from input peripheral board, maps it to boundary defined in input periph config and writes it to GLOBAL structure as process value.
+*/
 static uint8_t readProcessValue();
+
+/*
+* @brief Writes control value from GLOBAL structure mapped from output periph's config to uint16_t range into output peripheral board. 
+*/
 static uint8_t writeControlValue();
+
+/*
+* @brief Classic two state control with hysteresis and writes result to GLOBAL structure as control value.
+*/
 static void performTwoStateControl();
+
+/*
+* @brief PID control with integral anti-windup. Writes result into GLOBAL structure as control value.
+*/
 static void performPIDControl();
+
+/*
+* @brief Perform selected control algorithm.
+*/
 static void performControlAlgorithm();
 
-/* declarations */
-void CONTROL_controlTask() {
-	printf("INPUT struct size %d\n", sizeof(struct InputPeriphConfig));
-	printf("OUTPUT struct size %d\n", sizeof(struct OutputPeriphConfig));
-	printf("CONTROLLER union size %d\n", sizeof(struct ControllerConfig));
+/* definitions external functions */
+void CONTROL_controlTask(void* pParams) {
+	// just in case as mailbox needs access to config too
+	if(!isConfigInit())
+		initConfig();
 
-	initConfig();
-	vTaskDelay(pdMS_TO_TICKS(10));
 	PERIPH_initPeriphCommunication();
 
 	while (1) {
 		long long start = millis();
-		uint8_t transactionTime = readProcessValue();
+		readProcessValue();
+
 		performControlAlgorithm();
-		transactionTime += writeControlValue();
-		long long passed = millis() - start + transactionTime;
+
+		writeControlValue();
+
+		long long passed = millis() - start;
+		// just in case if reading/writting takes too long for some reason
 		if (passed <= CONTROL_LOOP_SAMPLING_TIME) {
 			vTaskDelay(pdMS_TO_TICKS(CONTROL_LOOP_SAMPLING_TIME - passed));
 		}
 	}
 }
 
-/**************************************************************/
-
+/* definitions helpers */
 static uint8_t readProcessValue() {
-	uint8_t looped = 0;
 	bool res = false;
 	uint16_t value;
+
+	// do until read succeeded or periph failure 
 	while (!res && !PERIPH_isPeriphConnectionError()) {
 		res = PERIPH_readPeriphInput(&value, 0);
-		vTaskDelay(pdMS_TO_TICKS(3));
-		looped += 3;
+		vTaskDelay(pdMS_TO_TICKS(1));// needed sometimes for "SPI" peripheral
 	}
 	GLOBAL_setProcessValue(map(value, 0, sizeof(uint16_t)-1, getInputPeriphConfig().inputMinValue, getInputPeriphConfig().inputMaxValue));
-	return looped;
+
+	return 0;
 }
 
 static uint8_t writeControlValue() {
 	double value = map(GLOBAL_getControlValue(), getOutputPeriphConfig().outputMinValue, getOutputPeriphConfig().outputMaxValue, 0, sizeof(uint16_t) - 1);
 	double minValue = map(getOutputPeriphConfig().outputMinValue, getOutputPeriphConfig().outputMinValue, getOutputPeriphConfig().outputMaxValue, 0, sizeof(uint16_t) - 1);
 
-	uint8_t looped = 0;
 	bool res = false;
+
+	// until succeeds
 	while (!res) {
+		// in case of failure try to write minimum output's value into board
 		if (PERIPH_isPeriphConnectionError()) {
-			res = true;
+			res = true;// pseudo success
 			PERIPH_writePeriphOutput(minValue, 0);
 			GLOBAL_setPeriphErrorFlag(true);
 		}
 		else {
 			res = PERIPH_writePeriphOutput(value, 0);
 		}
-		vTaskDelay(pdMS_TO_TICKS(3));
-		looped += 3;
+		vTaskDelay(pdMS_TO_TICKS(1));
 	}
-	return looped;
+
+	return 0;
 }
 
 static void performTwoStateControl() {
@@ -110,21 +142,29 @@ static void performTwoStateControl() {
 }
 
 static void performPIDControl() {
+	static long long previousTime = 0;
+
+	long long passed = millis() - previousTime;
+	if (passed == 0) {
+		return;
+	}
+
 	struct PIDConfig conf = getSelectedControllerConfig().controllerConfig.PIDConfig;
 	double error = GLOBAL_getSetpointValue() - GLOBAL_getProcessValue();
-	controller.pid.integratorValue = controller.pid.integratorValue + error * (double)(CONTROL_LOOP_SAMPLING_TIME / (double)1000);
-	double derivative = (error - controller.pid.previousError) / (double)(CONTROL_LOOP_SAMPLING_TIME / (double)1000);
+	controller.pid.integratorValue = controller.pid.integratorValue + error * (double)(passed / (double)1000);
+	double derivative = (error - controller.pid.previousError) / (double)(passed / (double)1000);
 	double controlVal = conf.kp * error + conf.ki * controller.pid.integratorValue + conf.kd * derivative;
 
+	// anti windup
 	if (controlVal > conf.saturarionUpper) {
 		if(error > 0 && controlVal > 0 || error < 0 && controlVal < 0)
-			controller.pid.integratorValue = controller.pid.integratorValue - error * (double)(CONTROL_LOOP_SAMPLING_TIME / (double)1000);
+			controller.pid.integratorValue = controller.pid.integratorValue - error * (double)(passed / (double)1000);
 
 		controlVal = conf.saturarionUpper;
 	}
 	else if (controlVal < conf.saturationLower) {
 		if (error > 0 && controlVal > 0 || error < 0 && controlVal < 0)
-			controller.pid.integratorValue = controller.pid.integratorValue - error * (double)(CONTROL_LOOP_SAMPLING_TIME / (double)1000);
+			controller.pid.integratorValue = controller.pid.integratorValue - error * (double)(passed / (double)1000);
 
 		controlVal = conf.saturationLower;
 	}
@@ -132,6 +172,7 @@ static void performPIDControl() {
 	GLOBAL_setControlValue(controlVal);
 
 	controller.pid.previousError = error;
+	previousTime = previousTime + passed;
 }
 
 static void performControlAlgorithm() {

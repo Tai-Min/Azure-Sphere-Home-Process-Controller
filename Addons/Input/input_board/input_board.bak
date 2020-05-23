@@ -218,4 +218,12 @@ Wire Wire Line
 	5200 4250 4600 4250
 Wire Wire Line
 	4600 4250 4600 4300
+Text GLabel 7650 3500 2    50   Input ~ 0
+MOSI
+Wire Wire Line
+	7600 3500 7650 3500
+Text GLabel 5100 4150 0    50   Input ~ 0
+MOSI
+Wire Wire Line
+	5100 4150 5200 4150
 $EndSCHEMATC

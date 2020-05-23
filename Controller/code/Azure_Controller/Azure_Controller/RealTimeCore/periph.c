@@ -1,6 +1,7 @@
-#include "os_hal_spim.h"
 #include "os_hal_gpio.h"
+
 #include "periph.h"
+#include "soft_spi.h"
 
 static const uint16_t crctable[256] =
 {
@@ -38,25 +39,6 @@ static const uint16_t crctable[256] =
 	0xFBCF, 0xEA46, 0xD8DD, 0xC954, 0xBDEB, 0xAC62, 0x9EF9, 0x8F70
 };
 
-static uint8_t spi_master_port_num = OS_HAL_SPIM_ISU1;
-
-static struct mtk_spi_config spi_input_device_config = {
-	.cpol = SPI_CPOL_0,
-	.cpha = SPI_CPHA_0,
-	.rx_mlsb = SPI_MSB,
-	.tx_mlsb = SPI_MSB,
-	.slave_sel = SPI_SELECT_DEVICE_0,
-};
-
-static struct mtk_spi_config spi_output_device_config = {
-	.cpol = SPI_CPOL_0,
-	.cpha = SPI_CPHA_0,
-	.rx_mlsb = SPI_MSB,
-	.tx_mlsb = SPI_MSB,
-	.slave_sel = SPI_SELECT_DEVICE_1,
-};
-
-
 static uint8_t inputErrorCntr = 0;
 static uint8_t outputErrorCntr = 0;
 
@@ -68,22 +50,55 @@ bool PERIPH_readPeriphInput(uint16_t *input, uint8_t inputIndex);
 bool PERIPH_writePeriphOutput(uint16_t output, uint8_t outputIndex);
 
 /* helpers */
+/*
+* @brief Merge two bytes into a word.
+*
+* @param lb Low byte.
+* @param hb High byte.
+* @return A word.
+*/
 static uint16_t bytesToWord(uint8_t lb, uint8_t hb);
+
+/*
+* @brief Get high byte from given word.
+* 
+* @param word A word.
+* @return High byte from given word.
+*/
 static uint8_t wordGetHighByte(int16_t word);
+
+/*
+* @brief Get low byte from given word.
+*
+* @param word A word.
+* @return Low byte from given word.
+*/
 static uint8_t wordGetLowByte(int16_t word);
+
+/*
+* @brief Compute CRC from given array.
+*
+* @param crc CRC polynominal.
+* @param c_ptr Pointer to array.
+* @param len Number of elements in array.
+* @return 16 bit CRC value.
+*/
 static uint16_t CRC16(uint16_t crc, const void* c_ptr, size_t len);
 
-/* declarations */
+/* definitions external functions */
 void PERIPH_initPeriphCommunication() {
-	mtk_os_hal_spim_ctlr_init(spi_master_port_num);
+	SPIInit();
 }
 
 bool PERIPH_isPeriphConnectionError() {
-	//return false;
-	if (outputErrorCntr >= 10)
+	if (outputErrorCntr >= 10) {
 		return true;
-	if (inputErrorCntr >= 10)
+	}
+		
+	if (inputErrorCntr >= 10) {
 		return true;
+	}
+		
 	return false;
 }
 
@@ -91,64 +106,51 @@ bool PERIPH_readPeriphInput(uint16_t *input, uint8_t inputIndex) {
 	if (PERIPH_isPeriphConnectionError())
 		return false;
 
-	struct mtk_spi_transfer xfer;
+	uint8_t* rx = pvPortMalloc(6 * sizeof(uint8_t));
+	uint8_t* tx = pvPortMalloc(6 * sizeof(uint8_t));
+	tx[0] = inputIndex;
 
-	memset(&xfer, 0, sizeof(xfer));
+	SPITransfer(6, rx, tx, 0);
 
-	uint8_t vals[5];
+	uint16_t computedCRC = CRC16(2137, rx +1, 3);
+	uint16_t receivedCRC = bytesToWord(rx[4], rx[5]);
 
-	xfer.tx_buf = NULL;
-	xfer.rx_buf = vals;
-	xfer.speed_khz = 100;
-	xfer.len = 5;
-	xfer.opcode = inputIndex;
-	xfer.opcode_len = 1;
-
-	mtk_os_hal_spim_transfer((spim_num)spi_master_port_num, &spi_input_device_config, &xfer);
-
-	
-	uint16_t computedCRC = CRC16(2137, vals, 3);
-	uint16_t receivedCRC = bytesToWord(vals[3], vals[4]);
+	bool res = true;
 
 	if (computedCRC != receivedCRC) {
 		inputErrorCntr++;
-		return false;
+		res = false;
 	}
 	else {
 		inputErrorCntr = 0;
 	}
-	*input = bytesToWord(vals[1], vals[2]);
-	return true;
+	*input = bytesToWord(rx[2], rx[3]);
+
+	vPortFree(rx);
+	vPortFree(tx);
+
+	return res;
 }
 
 bool PERIPH_writePeriphOutput(uint16_t output, uint8_t outputIndex) {
-	if (PERIPH_isPeriphConnectionError())
-		return;
 
-	struct mtk_spi_transfer xfer;
+	uint8_t* tx = pvPortMalloc(5 * sizeof(uint8_t));
+	uint8_t* rx = pvPortMalloc(5 * sizeof(uint8_t));
+	tx[0] = outputIndex;
+	tx[1] = wordGetLowByte(output);
+	tx[2] = wordGetHighByte(output);
+	uint16_t crc = CRC16(2137, tx, 3);
+	tx[3] = wordGetLowByte(crc);
+	tx[4] = wordGetHighByte(crc);
 
-	memset(&xfer, 0, sizeof(xfer));
+	SPITransfer(5, rx, tx, 1);
 
-	uint8_t transactionResult[5];
+	bool transactionGood = rx[1];
 
-	uint8_t vals[5];
-	vals[0] = outputIndex;
-	vals[1] = wordGetLowByte(output);
-	vals[2] = wordGetHighByte(output);
-	uint16_t crc = CRC16(2137, vals, 3);
-	vals[3] = wordGetLowByte(crc);
-	vals[4] = wordGetHighByte(crc);
+	vPortFree(tx);
+	vPortFree(rx);
 
-	xfer.tx_buf = vals+1;
-	xfer.rx_buf = transactionResult;
-	xfer.speed_khz = 100;
-	xfer.len = 4;
-	xfer.opcode = outputIndex;
-	xfer.opcode_len = 1;
-
-	mtk_os_hal_spim_transfer((spim_num)spi_master_port_num, &spi_output_device_config, &xfer);
-
-	if (!transactionResult[0]) {
+	if (!transactionGood) {
 		outputErrorCntr++;
 		return false;
 	}
@@ -156,7 +158,7 @@ bool PERIPH_writePeriphOutput(uint16_t output, uint8_t outputIndex) {
 	return true;
 }
 
-/**************************************************************/
+/* definitions helpers */
 
 static uint16_t bytesToWord(uint8_t lb, uint8_t hb) {
 	return lb | (uint16_t)(hb << 8);

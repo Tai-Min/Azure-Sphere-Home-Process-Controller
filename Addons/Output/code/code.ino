@@ -1,7 +1,7 @@
 #include "pins_arduino.h"
 
 #define BYTES_PER_FRAME 5
-#define NUMBER_OF_INPUTS 1
+#define NUMBER_OF_OUTPUTS 1
 
 static const uint16_t crctable[256] =
 {
@@ -39,10 +39,7 @@ static const uint16_t crctable[256] =
   0xFBCF, 0xEA46, 0xD8DD, 0xC954, 0xBDEB, 0xAC62, 0x9EF9, 0x8F70
 };
 
-uint16_t CRC16(
-  uint16_t crc,      // Seed for CRC calculation
-  const void *c_ptr, // Pointer to byte array to perform CRC on
-  size_t len)        // Number of bytes to CRC
+uint16_t CRC16( uint16_t crc, const void *c_ptr, size_t len)
 {
   const uint8_t *c = c_ptr;
 
@@ -52,11 +49,11 @@ uint16_t CRC16(
   return crc;
 }
 
-uint8_t toHighByte(int16_t wordVal) {
+uint8_t toHighByte(uint16_t wordVal) {
   return wordVal >> 8;
 }
 
-uint8_t toLowByte(int16_t wordVal) {
+uint8_t toLowByte(uint16_t wordVal) {
   return wordVal;
 }
 
@@ -66,11 +63,12 @@ void setup (void)
   pinMode(SS, INPUT);
   pinMode(MOSI, INPUT);
   pinMode(SCK, INPUT);
+  pinMode(6, OUTPUT);
   SPCR |= _BV(SPE) | _BV(SPIE);
   Serial.begin(115200);
 }
 
-volatile int16_t controlValues[NUMBER_OF_INPUTS] = {0};
+volatile uint16_t controlValues[NUMBER_OF_OUTPUTS] = {0};
 volatile uint8_t currentIndex = 0;
 volatile uint8_t readPhase = 0;
 volatile uint16_t receivedCRC = 0;
@@ -91,7 +89,7 @@ ISR (SPI_STC_vect)
     SPDR = transactionGood;
   }
   else if (readPhase < 3)
-    controlValues[currentIndex] |= (int16_t)(SPDR << ((readPhase - 1) * 8));
+    controlValues[currentIndex] |= (uint16_t)(SPDR << ((readPhase - 1) * 8));
   else {
     receivedCRC |= (uint16_t)(SPDR << ((readPhase - 3) * 8));
   }
@@ -105,8 +103,9 @@ ISR (SPI_STC_vect)
 
 void loop() {
   if (dataReady) {
+    Serial.print("Current index: ");
     Serial.println(currentIndex);
-    Serial.println((uint16_t)controlValues[currentIndex], BIN);
+    Serial.print("Value: ");
     Serial.println(controlValues[currentIndex]);
     
     //check crc
@@ -118,19 +117,28 @@ void loop() {
     uint16_t computedCRC = CRC16(2137, vals, 3);
     
     if (receivedCRC != computedCRC) {
+      Serial.print("Received crc: ");
       Serial.println(receivedCRC);
+      Serial.print("Computed crc: ");
       Serial.println(computedCRC);
       Serial.println("transaction error");
       transactionGood = false;
 
-      for(uint8_t i = 0; i < NUMBER_OF_INPUTS; i++){
+      for(uint8_t i = 0; i < NUMBER_OF_OUTPUTS; i++){
         controlValues[i] = 0;
       }
+      currentIndex = 0;
+      receivedCRC = 0;
     }
     else {
       transactionGood = true;
-      //all control here
+      /* all control here */
+      analogWrite(6, map(controlValues[currentIndex], 0, pow(2, sizeof(uint16_t))-1, 0, 255));
+      /* */
+      
       controlValues[currentIndex] = 0;
+      currentIndex = 0;
+      receivedCRC = 0;
     }
     dataReady = false;
   }

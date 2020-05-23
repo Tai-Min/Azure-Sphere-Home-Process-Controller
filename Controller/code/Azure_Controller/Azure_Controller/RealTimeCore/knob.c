@@ -1,13 +1,19 @@
 #include <math.h>
+#include <stdlib.h>
 #include "FreeRTOS.h"
 
 #include "os_hal_adc.h"
+#include "printf.h"
 
 #include "knob.h"
 #include "common.h"
+#include "config.h"
 #include "global_state.h"
 
-#define KNOB_MAX_DIFFERENCE 250
+#define KNOB_MIN 0
+#define KNOB_MAX (4095 - 50) //offset due to potentiometer's real range
+
+#define KNOB_MAX_DIFFERENCE 150
 
 static const adc_channel adcChannel = ADC_CHANNEL_1;
 
@@ -20,18 +26,55 @@ static long long knobDisplayTimestamp = 0;
 void KNOB_knobTask(void* pParams);
 
 /* helpers */
+/*
+* @brief Returns knob's value from previous reading.
+* 
+* @return Knob's value from previous reading.
+*/
 static uint16_t getKnobValue();
-int16_t getKnobValueInInputPeriphRange();
 
+/*
+* @brief Get knob's value mapped to input peripheral boundaries.
+*
+* @return Knob's value mapped to input peripheral boundaries.
+*/
+static int16_t getKnobValueInInputPeriphRange();
+
+/*
+* @brief Returns true if knob's value has changed by KNOB_MAX_DIFFERENCE margin.
+*
+* @return True if knob's value has changed by KNOB_MAX_DIFFERENCE margin.
+*/
 static bool knobValueChanged();
+
+/*
+* @brief Ignore if knob value has changed. Useful to ignore change when IP address is currently displayed.
+*/
 static void dimissKnobValueChange();
 
-static int getKnobCurrentValue();
+/*
+* @brief Read knob's ADC channel.
+*/
+static void getKnobCurrentValue();
+
+/*
+* @brief Get how much knob's value has changed between readings.
+*
+* @return The difference.
+*/
 static uint16_t inline getKnobValueDifference();
+
+/*
+* @brief Check if knob's value has changed by KNOB_MAX_DIFFERENCE and set adequate flag.
+*/
 static void checkKnobForChange();
+
+/*
+* @brief Returns true if some time has passed without change of knob's value.
+*/
 static bool knobTimeout();
 
-/* declarations */
+/* definitions external functions */
 void KNOB_knobTask(void* pParams) {
 	getKnobCurrentValue(adcChannel, &currentKnobValue);
 	previousKnobValue = currentKnobValue;
@@ -59,17 +102,16 @@ void KNOB_knobTask(void* pParams) {
 	}
 }
 
-/**************************************************************/
-
-uint16_t getKnobValue() {
+/* definitions helpers */
+static uint16_t getKnobValue() {
 	return currentKnobValue;
 }
 
-int16_t getKnobValueInInputPeriphRange() {
-	return map(getKnobValue(), KNOB_MIN, KNOB_MAX, 50, 121);
+static int16_t getKnobValueInInputPeriphRange() {
+	return map(getKnobValue(), KNOB_MIN, KNOB_MAX, getInputPeriphConfig().inputMinValue, getInputPeriphConfig().inputMaxValue);
 }
 
-bool knobValueChanged() {
+static bool knobValueChanged() {
 	if (knobValueChangedflag) {
 		knobValueChangedflag = false;
 		return true;
@@ -77,11 +119,11 @@ bool knobValueChanged() {
 	return false;
 }
 
-void dimissKnobValueChange() {
+static void dimissKnobValueChange() {
 	knobValueChanged();
 }
 
-static int getKnobCurrentValue() {
+static void getKnobCurrentValue() {
 	u16 ch_bit_map = (0x01 << adcChannel);
 
 	mtk_os_hal_adc_ctlr_init(ADC_PMODE_ONE_TIME, ADC_FIFO_DIRECT, ch_bit_map);

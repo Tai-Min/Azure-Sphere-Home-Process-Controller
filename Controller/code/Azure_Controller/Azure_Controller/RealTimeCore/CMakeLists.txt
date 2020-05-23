@@ -24,7 +24,7 @@ ADD_EXECUTABLE(${PROJECT_NAME}
                ./thirdparty/mt3620_m4_software/MT3620_M4_Sample_Code/FreeRTOS/OS_HAL/src/os_hal_gpio.c
                ./thirdparty/mt3620_m4_software/MT3620_M4_Sample_Code/FreeRTOS/OS_HAL/src/os_hal_uart.c
                ./thirdparty/mt3620_m4_software/MT3620_M4_Sample_Code/FreeRTOS/OS_HAL/src/os_hal_dma.c
-               ./thirdparty/mt3620_m4_software/MT3620_M4_Sample_Code/FreeRTOS/OS_HAL/src/os_hal_adc.c "leds.c" "knob.c" "seg.c" "control.c" "common.c" "periph.c" "eeprom.c" "buttons.c" "config.c" "global_state.c")
+               ./thirdparty/mt3620_m4_software/MT3620_M4_Sample_Code/FreeRTOS/OS_HAL/src/os_hal_adc.c "leds.c" "knob.c" "seg.c" "control.c" "common.c" "periph.c" "eeprom.c" "buttons.c" "config.c" "global_state.c" "intercomm/intercore.c" "intercomm/logical-dpc.c" "intercomm/logical-intercore.c" "mailbox.c" "soft_spi.c")
 
 # Include Folders
 INCLUDE_DIRECTORIES(${PROJECT_NAME} PUBLIC

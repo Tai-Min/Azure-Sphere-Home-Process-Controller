@@ -1,8 +1,10 @@
 #include <stdlib.h>
 #include "FreeRTOS.h"
+#include "task.h"
 #include "printf.h"
 #include "config.h"
 #include "eeprom.h"
+#include "global_state.h"
 
 static struct ControllerConfig controllerConfig = {
 	.controllerType = NONE
@@ -18,13 +20,19 @@ static struct OutputPeriphConfig outputConfig = {
 	.outputMaxValue = 100
 };
 
+static bool initFlag = false;
+
 /* external functions */
 void initConfig();
+bool isConfigInit();
 
-void setInputPeriphConfig(uint8_t index, struct InputPeriphConfig inputConf);
+void setMQTTConfig(struct MQTTConfig conf);
+struct MQTTConfig getMQTTConfig();
+
+void setInputPeriphConfig(struct InputPeriphConfig inputConf);
 struct InputPeriphConfig getInputPeriphConfig();
 
-void setOutputPeriphConfig(uint8_t index, struct OutputPeriphConfig outputConf);
+void setOutputPeriphConfig(struct OutputPeriphConfig outputConf);
 struct OutputPeriphConfig getOutputPeriphConfig();
 
 struct ControllerConfig getSelectedControllerConfig();
@@ -32,27 +40,60 @@ struct ControllerConfig getSelectedControllerConfig();
 void setUsedController(struct ControllerConfig conf);
 
 /* helpers */
+/*
+* @brief Set controller's config to none.
+*/
 static void useNoController();
+
+/*
+* @brief Set controller's config to two state.
+*/
 static void useTwoStateController(struct TwoStateConfig controlConf);
+
+/*
+* @brief Set controller's config to pid.
+*/
 static void usePIDController(struct PIDConfig controlConf);
 
-/* definitions */
+/* definitions external functions */
 void initConfig() {
 	initEEPROMCommunication();
 
 	if (!isEEPROMInitialized()) {
+		struct MQTTConfig c = {
+			.processValueTopic = "PV\0",
+			.setpointTopic = "SV\0",
+			.brokerIPAddress = "255.255.255.255\0"
+		};
 		writeInputConfigToEEPROM(inputConfig);
 		writeOutputConfigToEEPROM(outputConfig);
 		writeControllerConfigToEEPROM(controllerConfig);
+		writeMQTTConfigToEEPROM(c);
 		setEEPROMInitializedBit();
 	}
 	
 	inputConfig = loadInputConfigFromEEPROM();
 	outputConfig = loadOutputConfigFromEEPROM();
 	controllerConfig = loadControllerConfigFromEEPROM();
+	GLOBAL_setSetpointValue(inputConfig.inputMinValue);
+
+	initFlag = true;
 }
 
-void setInputPeriphConfig(uint8_t index, struct InputPeriphConfig inputConf) {
+bool isConfigInit() {
+	return initFlag;
+}
+
+void setMQTTConfig(struct MQTTConfig conf) {
+	writeMQTTConfigToEEPROM(conf);
+}
+
+struct MQTTConfig getMQTTConfig() {
+	struct MQTTConfig conf = loadMQTTConfigFromEEPROM();
+	return conf;
+}
+
+void setInputPeriphConfig(struct InputPeriphConfig inputConf) {
 	inputConfig = inputConf;
 	writeInputConfigToEEPROM(inputConf);
 }
@@ -61,17 +102,13 @@ struct InputPeriphConfig getInputPeriphConfig() {
 	return inputConfig;
 }
 
-void setOutputPeriphConfig(uint8_t index, struct OutputPeriphConfig outputConf) {
+void setOutputPeriphConfig(struct OutputPeriphConfig outputConf) {
 	outputConfig = outputConf;
 	writeOutputConfigToEEPROM(outputConf);
 }
 
 struct OutputPeriphConfig getOutputPeriphConfig() {
 	return outputConfig;
-}
-
-struct ControllerConfig getSelectedControllerConfig() {
-	return controllerConfig;
 }
 
 void setUsedController(struct ControllerConfig conf) {
@@ -86,22 +123,25 @@ void setUsedController(struct ControllerConfig conf) {
 		usePIDController(conf.controllerConfig.PIDConfig);
 		break;
 	}
+	writeControllerConfigToEEPROM(controllerConfig);
 }
 
-/**************************************************************/
+struct ControllerConfig getSelectedControllerConfig() {
+	return controllerConfig;
+}
+
+/* definitions helpers */
 static void useNoController() {
 	controllerConfig.controllerType = NONE;
-	writeControllerConfigToEEPROM(controllerConfig);
+	
 }
 
 static void useTwoStateController(struct TwoStateConfig controlConf) {
 	controllerConfig.controllerType = TWO_STATE;
 	controllerConfig.controllerConfig.twoStateConfig = controlConf;
-	writeControllerConfigToEEPROM( controllerConfig);
 }
 
 static void usePIDController(struct PIDConfig controlConf) {
 	controllerConfig.controllerType = PID;
 	controllerConfig.controllerConfig.PIDConfig = controlConf;
-	writeControllerConfigToEEPROM(controllerConfig);
 }

@@ -1,7 +1,7 @@
 #include "pins_arduino.h"
 
 #define BYTES_PER_FRAME 6
-#define NUMBER_OF_INPUTS 4
+#define NUMBER_OF_INPUTS 1
 
 static const uint16_t crctable[256] =
 {
@@ -52,11 +52,11 @@ uint16_t CRC16(
   return crc;
 }
 
-uint8_t toHighByte(int16_t wordVal) {
+uint8_t toHighByte(uint16_t wordVal) {
   return wordVal >> 8;
 }
 
-uint8_t toLowByte(int16_t wordVal) {
+uint8_t toLowByte(uint16_t wordVal) {
   return wordVal;
 }
 
@@ -70,9 +70,9 @@ void setup (void)
   Serial.begin(115200);
 }
 
-volatile uint16_t crcs[NUMBER_OF_INPUTS] = {0, 0, 0, 0};
+volatile uint16_t crcs[NUMBER_OF_INPUTS] = {0};
 volatile uint8_t currentIndex = 0;
-volatile int16_t measurements[NUMBER_OF_INPUTS] = {1337, 2137, 2137, 22};
+volatile uint16_t measurements[NUMBER_OF_INPUTS] = {0};
 volatile uint8_t readPhase = 0;
 volatile bool dataReady = false;
 
@@ -102,6 +102,7 @@ ISR (SPI_STC_vect)
 void loop() {
   if (dataReady) {
     //all measurements here
+    Serial.print("Index: ");
     Serial.println(currentIndex);
     for (uint8_t i = 0; i < NUMBER_OF_INPUTS; i++) {
 
@@ -111,8 +112,11 @@ void loop() {
       vals[2] = toHighByte(measurements[i]);
 
       crcs[i] = CRC16(2137, vals, 3);
-      Serial.println(i);
-      Serial.println(crcs[i]);
+
+      if(i == currentIndex){
+        Serial.print("CRC: ");
+        Serial.println(crcs[i]);
+      }
     }
     dataReady = false;
   }

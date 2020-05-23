@@ -13,7 +13,7 @@ static struct GlobalState {
 };
 
 static struct GlobalState globalState = {
-	.ipAddress = {192, 168, 0, 1},
+	.ipAddress = {0,0,0,0},
 	.displayState = SETPOINT_VALUE,
 	.isPeriphError = false,
 	.isNetworkError = false,
@@ -24,6 +24,7 @@ static struct GlobalState globalState = {
 	.knobValueInInputPeriphRange = 0,
 };
 
+/* external functions */
 void GLOBAL_setIPAddress(struct IPAddress addr);
 struct IPAddress GLOBAL_getIPAddress();
 
@@ -51,6 +52,7 @@ double GLOBAL_getControlValue();
 void GLOBAL_setKnobValueInInputPeriphRange(double val);
 double GLOBAL_getKnobValueInInputPeriphRange();
 
+/* definitions external functions */
 void GLOBAL_setIPAddress(struct IPAddress addr) { globalState.ipAddress = addr; }
 struct IPAddress GLOBAL_getIPAddress() { return globalState.ipAddress; };
 

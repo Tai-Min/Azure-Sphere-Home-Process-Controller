@@ -3,63 +3,45 @@
 
 #include "os_hal_i2c.h"
 
+#include "config.h"
 #include "eeprom.h"
 
 #define USAGE_BIT 0
 
-#define CONTROLLER_CONF_SIZE_BYTES sizeof(struct ControllerConfig)
-#define CONTROLLER_CONF_FIRST_BIT (USAGE_BIT + 1)
-#define CONTROLLER_CONF_LAST_BIT (sizeof(struct ControllerConfig) + CONTROLLER_CONF_FIRST_BIT - 1)
+#define CONTROLLER_CONF_FIRST_BYTE (USAGE_BIT + 1)
+#define CONTROLLER_CONF_LAST_BYTE (sizeof(struct ControllerConfig) + CONTROLLER_CONF_FIRST_BYTE - 1)
 
-#define INPUT_CONF_SIZE_BYTES sizeof(struct InputPeriphConfig)
-#define INPUT_CONF_FIRST_BIT (CONTROLLER_CONF_LAST_BIT + 1)
-#define INPUT_CONF_LAST_BIT (sizeof(struct InputPeriphConfig) + INPUT_CONF_FIRST_BIT - 1)
+#define INPUT_CONF_FIRST_BYTE (CONTROLLER_CONF_LAST_BYTE + 1)
+#define INPUT_CONF_LAST_BYTE (sizeof(struct InputPeriphConfig) + INPUT_CONF_FIRST_BYTE - 1)
 
-#define OUTPUT_CONF_SIZE_BYTES sizeof(struct OutputPeriphConfig)
-#define OUTPUT_CONF_FIRST_BIT (INPUT_CONF_LAST_BIT + 1)
-#define OUTPUT_CONF_LAST_BIT (sizeof(struct OutputPeriphConfig) - 1)
+#define OUTPUT_CONF_FIRST_BYTE (INPUT_CONF_LAST_BYTE + 1)
+#define OUTPUT_CONF_LAST_BYTE (sizeof(struct OutputPeriphConfig) + OUTPUT_CONF_FIRST_BYTE - 1)
+
+#define MQTT_CONF_FIRST_BYTE (OUTPUT_CONF_LAST_BYTE + 1)
+#define MQTT_CONF_LAST_BYTE (sizeof(struct MQTTConfig) + MQTT_CONF_FIRST_BYTE - 1)
 
 #define EEPROM_CONTROL_CODE 0b01010000
-
-static union InputPeriphConfigBuffer {
-	struct InputPeriphConfig config;
-	uint8_t bytes[sizeof(struct InputPeriphConfig)];
-};
-
-static union OutputPeriphConfigBuffer {
-	struct OutputPeriphConfig config;
-	uint8_t bytes[sizeof(struct OutputPeriphConfig)];
-};
-
-static union ControllerConfigBuffer {
-	struct ControllerConfig config;
-	uint8_t bytes[sizeof(struct ControllerConfig)+1];
-};
-
-static union InputPeriphConfigBuffer inputConfBuf;
-
-static union OutputPeriphConfigBuffer outputConfBuf;
-
-static union ControllerConfigBuffer controllerConfBuf;
 
 static i2c_num i2cNum = OS_HAL_I2C_ISU2;
 
 static uint8_t * commandBuf;
-static int8_t * buf;
+static int8_t * rxBuf;
 
 /* external functions */
 void initEEPROMCommunication();
 bool isEEPROMInitialized();
-enum ControllerType getControllerTypeFromEEPROM();
 struct InputPeriphConfig loadInputConfigFromEEPROM();
 struct OutputPeriphConfig loadOutputConfigFromEEPROM();
 struct ControllerConfig loadControllerConfigFromEEPROM();
+struct MQTTConfig loadMQTTConfigFromEEPROM();
+
 void setEEPROMInitializedBit();
 void writeInputConfigToEEPROM(struct InputPeriphConfig inputConf);
 void writeOutputConfigToEEPROM(struct OutputPeriphConfig outputConf);
 void writeControllerConfigToEEPROM(struct ControllerConfig controllerConfig);
+void writeMQTTConfigToEEPROM(struct MQTTConfig mqttConf);
 
-/* declarations */
+/* definitions external functions */
 void initEEPROMCommunication() {
 	mtk_os_hal_i2c_ctrl_init(i2cNum);
 	mtk_os_hal_i2c_speed_init(i2cNum, I2C_SCL_400kHz);
@@ -74,64 +56,94 @@ bool isEEPROMInitialized() {
 
 	printf("Usage bit received as: %d\n", res);
 
-	return res;
+	return (res == 1);
 }
 
 struct InputPeriphConfig loadInputConfigFromEEPROM() {
-	uint8_t addr = INPUT_CONF_FIRST_BIT;
-	buf = pvPortMalloc(INPUT_CONF_SIZE_BYTES);
+	struct InputPeriphConfig inputConf;
+	uint8_t addr = INPUT_CONF_FIRST_BYTE;
+	rxBuf = pvPortMalloc(sizeof(struct InputPeriphConfig));
 	
-	mtk_os_hal_i2c_write_read(i2cNum, EEPROM_CONTROL_CODE, &addr, buf, 1, INPUT_CONF_SIZE_BYTES);
-	memcpy(inputConfBuf.bytes, buf, INPUT_CONF_SIZE_BYTES);
+	mtk_os_hal_i2c_write_read(i2cNum, EEPROM_CONTROL_CODE, &addr, rxBuf, 1, sizeof(struct InputPeriphConfig));
+	memcpy((uint8_t *)&inputConf, rxBuf, sizeof(struct InputPeriphConfig));
 
 	printf("Input loaded as:\n");
-	printf("Min val: %f\n", inputConfBuf.config.inputMinValue);
-	printf("Max val: %f\n", inputConfBuf.config.inputMaxValue);
+	printf("Min val: %f\n", inputConf.inputMinValue);
+	printf("Max val: %f\n", inputConf.inputMaxValue);
 
-	vPortFree(buf);
+	vPortFree(rxBuf);
 
-	return inputConfBuf.config;
+	return inputConf;
 }
 
 struct OutputPeriphConfig loadOutputConfigFromEEPROM() {
-	uint8_t addr = OUTPUT_CONF_FIRST_BIT;
-	buf = pvPortMalloc(OUTPUT_CONF_SIZE_BYTES);
+	struct OutputPeriphConfig outputConf;
+	uint8_t addr = OUTPUT_CONF_FIRST_BYTE;
+	rxBuf = pvPortMalloc(sizeof(struct OutputPeriphConfig));
 
-	mtk_os_hal_i2c_write_read(i2cNum, EEPROM_CONTROL_CODE, &addr, buf, 1, OUTPUT_CONF_SIZE_BYTES);
-	memcpy(outputConfBuf.bytes, buf, OUTPUT_CONF_SIZE_BYTES);
+	mtk_os_hal_i2c_write_read(i2cNum, EEPROM_CONTROL_CODE, &addr, rxBuf, 1, sizeof(struct OutputPeriphConfig));
+	memcpy((uint8_t*)&outputConf, rxBuf, sizeof(struct OutputPeriphConfig));
 
 	printf("Output loaded as:\n");
-	printf("Min val: %f\n", outputConfBuf.config.outputMinValue);
-	printf("Max val: %f\n", outputConfBuf.config.outputMaxValue);
+	printf("Min val: %f\n", outputConf.outputMinValue);
+	printf("Max val: %f\n", outputConf.outputMaxValue);
 
-	vPortFree(buf);
+	vPortFree(rxBuf);
 
-	return outputConfBuf.config;
+	return outputConf;
 }
 
 struct ControllerConfig loadControllerConfigFromEEPROM() {
-	uint8_t addr = CONTROLLER_CONF_FIRST_BIT;
-	buf = pvPortMalloc(CONTROLLER_CONF_SIZE_BYTES);
+	struct ControllerConfig ctrlConf;
+	uint8_t addr = CONTROLLER_CONF_FIRST_BYTE;
+	rxBuf = pvPortMalloc(sizeof(struct ControllerConfig));
 
-	mtk_os_hal_i2c_write_read(i2cNum, EEPROM_CONTROL_CODE, &addr, buf, 1, CONTROLLER_CONF_SIZE_BYTES);
-	memcpy(controllerConfBuf.bytes, buf, CONTROLLER_CONF_SIZE_BYTES);
+	mtk_os_hal_i2c_write_read(i2cNum, EEPROM_CONTROL_CODE, &addr, rxBuf, 1, sizeof(struct ControllerConfig));
+	memcpy((uint8_t*)&ctrlConf, rxBuf, sizeof(struct ControllerConfig));
 
-	if (controllerConfBuf.config.controllerType == NONE) {
-		printf("Controller loaded as NONE\n");
+	if (ctrlConf.controllerType == NONE) {
+		printf("Controller: NONE\n");
 	}
-	else if (controllerConfBuf.config.controllerType == TWO_STATE) {
-		printf("Controller loaded as Two State\n");
+	else if (ctrlConf.controllerType == TWO_STATE) {
+		printf("Controller: TWO STATE\n");
+		printf("Off value: %f\n", ctrlConf.controllerConfig.twoStateConfig.offValue);
+		printf("On value: %f\n", ctrlConf.controllerConfig.twoStateConfig.onValue);
+		printf("Bottom switch boundary: %f\n", ctrlConf.controllerConfig.twoStateConfig.bottomSwitchBoundary);
+		printf("Top switch boundary: %f\n", ctrlConf.controllerConfig.twoStateConfig.topSwitchBoundary);
 	}
-	else if (controllerConfBuf.config.controllerType == PID) {
-		printf("Controller loaded as PID\n");
+	else if (ctrlConf.controllerType == PID) {
+		printf("Controller: PID\n");
+		printf("Kp value: %f\n", ctrlConf.controllerConfig.PIDConfig.kp);
+		printf("Ki value: %f\n", ctrlConf.controllerConfig.PIDConfig.ki);
+		printf("Kd value: %f\n", ctrlConf.controllerConfig.PIDConfig.kd);
+		printf("Lower saturation: %f\n", ctrlConf.controllerConfig.PIDConfig.saturationLower);
+		printf("Upper saturation: %f\n", ctrlConf.controllerConfig.PIDConfig.saturarionUpper);
 	}
 	else {
 		printf("Controller loaded as Invalid\n");
 	}
 
-	vPortFree(buf);
+	vPortFree(rxBuf);
 
-	return controllerConfBuf.config;
+	return ctrlConf;
+}
+
+struct MQTTConfig loadMQTTConfigFromEEPROM() {
+	struct MQTTConfig mqttConf;
+	uint8_t addr = MQTT_CONF_FIRST_BYTE;
+	rxBuf = pvPortMalloc(sizeof(struct MQTTConfig));
+
+	mtk_os_hal_i2c_write_read(i2cNum, EEPROM_CONTROL_CODE, &addr, rxBuf, 1, sizeof(struct MQTTConfig));
+	memcpy((uint8_t*)&mqttConf, rxBuf, sizeof(struct MQTTConfig));
+
+	printf("MQTT config loaded as:\n");
+	printf("Broker IP: %s\n", mqttConf.brokerIPAddress);
+	printf("Setpoint topic: %s\n", mqttConf.setpointTopic);
+	printf("Process value topic: %s\n", mqttConf.processValueTopic);
+
+	vPortFree(rxBuf);
+
+	return mqttConf;
 }
 
 void setEEPROMInitializedBit() {
@@ -146,43 +158,61 @@ void setEEPROMInitializedBit() {
 }
 
 void writeInputConfigToEEPROM(struct InputPeriphConfig inputConf) {
-	inputConfBuf.config = inputConf;
+	rxBuf = pvPortMalloc(2);
 
-	buf = pvPortMalloc(2);
-	for (uint8_t i = 0; i < 1 + INPUT_CONF_SIZE_BYTES; i++) {
-		buf[0] = INPUT_CONF_FIRST_BIT + i;
-		memcpy(buf+1, inputConfBuf.bytes+i, 1);
-		mtk_os_hal_i2c_write(i2cNum, EEPROM_CONTROL_CODE, buf, 2);
+	for (uint8_t i = 0; i < 1 + sizeof(struct InputPeriphConfig); i++) {
+		rxBuf[0] = INPUT_CONF_FIRST_BYTE + i;
+		memcpy(rxBuf+1, (uint8_t*)&inputConf +i, 1);
+		mtk_os_hal_i2c_write(i2cNum, EEPROM_CONTROL_CODE, rxBuf, 2);
 		vTaskDelay(pdMS_TO_TICKS(10));
 	}
-	vPortFree(buf);
+
+	vPortFree(rxBuf);
+
 	vTaskDelay(pdMS_TO_TICKS(10));
 }
 
 void writeOutputConfigToEEPROM(struct OutputPeriphConfig outputConf) {
-	outputConfBuf.config = outputConf;
+	rxBuf = pvPortMalloc(2);
 
-	buf = pvPortMalloc(2);
-	for (uint8_t i = 0; i < 1 + OUTPUT_CONF_SIZE_BYTES; i++) {
-		buf[0] = OUTPUT_CONF_FIRST_BIT + i;
-		memcpy(buf + 1, outputConfBuf.bytes + i, 1);
-		mtk_os_hal_i2c_write(i2cNum, EEPROM_CONTROL_CODE, buf, 2);
+	for (uint8_t i = 0; i < 1 + sizeof(struct OutputPeriphConfig); i++) {
+		rxBuf[0] = OUTPUT_CONF_FIRST_BYTE + i;
+		memcpy(rxBuf + 1, (uint8_t*)&outputConf + i, 1);
+		mtk_os_hal_i2c_write(i2cNum, EEPROM_CONTROL_CODE, rxBuf, 2);
 		vTaskDelay(pdMS_TO_TICKS(10));
 	}
-	vPortFree(buf);
+
+	vPortFree(rxBuf);
+
 	vTaskDelay(pdMS_TO_TICKS(10));
 }
 
 void writeControllerConfigToEEPROM(struct ControllerConfig controllerConfig) {
-	controllerConfBuf.config = controllerConfig;
+	rxBuf = pvPortMalloc(2);
 
-	buf = pvPortMalloc(2);
-	for (uint8_t i = 0; i < 1 + CONTROLLER_CONF_SIZE_BYTES; i++) {
-		buf[0] = CONTROLLER_CONF_FIRST_BIT + i;
-		memcpy(buf + 1, controllerConfBuf.bytes + i, 1);
-		mtk_os_hal_i2c_write(i2cNum, EEPROM_CONTROL_CODE, buf, 2);
+	for (uint8_t i = 0; i < 1 + sizeof(struct ControllerConfig); i++) {
+		rxBuf[0] = CONTROLLER_CONF_FIRST_BYTE + i;
+		memcpy(rxBuf + 1, (uint8_t*)&controllerConfig + i, 1);
+		mtk_os_hal_i2c_write(i2cNum, EEPROM_CONTROL_CODE, rxBuf, 2);
 		vTaskDelay(pdMS_TO_TICKS(10));
 	}
-	vPortFree(buf);
+
+	vPortFree(rxBuf);
+
+	vTaskDelay(pdMS_TO_TICKS(10));
+}
+
+void writeMQTTConfigToEEPROM(struct MQTTConfig mqttConf) {
+	rxBuf = pvPortMalloc(2);
+
+	for (uint8_t i = 0; i < 1 + sizeof(struct MQTTConfig); i++) {
+		rxBuf[0] = MQTT_CONF_FIRST_BYTE + i;
+		memcpy(rxBuf + 1, (uint8_t*)&mqttConf + i, 1);
+		mtk_os_hal_i2c_write(i2cNum, EEPROM_CONTROL_CODE, rxBuf, 2);
+		vTaskDelay(pdMS_TO_TICKS(10));
+	}
+
+	vPortFree(rxBuf);
+
 	vTaskDelay(pdMS_TO_TICKS(10));
 }

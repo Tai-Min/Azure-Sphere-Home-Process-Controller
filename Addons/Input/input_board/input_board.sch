@@ -28,12 +28,12 @@ $EndComp
 $Comp
 L Connector_Generic:Conn_02x03_Odd_Even J2
 U 1 1 5EB7A0A9
-P 7300 3600
-F 0 "J2" H 7350 3917 50  0000 C CNN
-F 1 "Conn_02x03_Odd_Even" H 7350 3826 50  0000 C CNN
-F 2 "Connector_PinHeader_2.54mm:PinHeader_2x03_P2.54mm_Horizontal" H 7300 3600 50  0001 C CNN
-F 3 "~" H 7300 3600 50  0001 C CNN
-	1    7300 3600
+P 4750 2250
+F 0 "J2" H 4800 2567 50  0000 C CNN
+F 1 "Conn_02x03_Odd_Even" H 4800 2476 50  0000 C CNN
+F 2 "Connector_PinHeader_2.54mm:PinHeader_2x03_P2.54mm_Horizontal" H 4750 2250 50  0001 C CNN
+F 3 "~" H 4750 2250 50  0001 C CNN
+	1    4750 2250
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -78,12 +78,12 @@ CS
 $Comp
 L power:+5V #PWR?
 U 1 1 5EB7F793
-P 6850 3700
-F 0 "#PWR?" H 6850 3550 50  0001 C CNN
-F 1 "+5V" H 6865 3873 50  0000 C CNN
-F 2 "" H 6850 3700 50  0001 C CNN
-F 3 "" H 6850 3700 50  0001 C CNN
-	1    6850 3700
+P 4300 2350
+F 0 "#PWR?" H 4300 2200 50  0001 C CNN
+F 1 "+5V" H 4315 2523 50  0000 C CNN
+F 2 "" H 4300 2350 50  0001 C CNN
+F 3 "" H 4300 2350 50  0001 C CNN
+	1    4300 2350
 	0    -1   -1   0   
 $EndComp
 $Comp
@@ -122,30 +122,30 @@ $EndComp
 $Comp
 L power:GND #PWR?
 U 1 1 5EB85294
-P 7950 3700
-F 0 "#PWR?" H 7950 3450 50  0001 C CNN
-F 1 "GND" H 7955 3527 50  0000 C CNN
-F 2 "" H 7950 3700 50  0001 C CNN
-F 3 "" H 7950 3700 50  0001 C CNN
-	1    7950 3700
+P 5400 2350
+F 0 "#PWR?" H 5400 2100 50  0001 C CNN
+F 1 "GND" H 5405 2177 50  0000 C CNN
+F 2 "" H 5400 2350 50  0001 C CNN
+F 3 "" H 5400 2350 50  0001 C CNN
+	1    5400 2350
 	0    -1   -1   0   
 $EndComp
-Text GLabel 7050 3500 0    50   Input ~ 0
+Text GLabel 4500 2150 0    50   Input ~ 0
 CS
-Text GLabel 7650 3600 2    50   Input ~ 0
+Text GLabel 5100 2250 2    50   Input ~ 0
 MISO
-Text GLabel 7050 3600 0    50   Input ~ 0
+Text GLabel 4500 2250 0    50   Input ~ 0
 SCK
 Wire Wire Line
-	7600 3600 7650 3600
+	5050 2250 5100 2250
 Wire Wire Line
-	7100 3500 7050 3500
+	4550 2150 4500 2150
 Wire Wire Line
-	7100 3600 7050 3600
+	4550 2250 4500 2250
 Wire Wire Line
-	7100 3700 6850 3700
+	4550 2350 4300 2350
 Wire Wire Line
-	7600 3700 7950 3700
+	5050 2350 5400 2350
 Wire Wire Line
 	4600 5000 4600 5100
 Wire Wire Line
@@ -218,10 +218,10 @@ Wire Wire Line
 	5200 4250 4600 4250
 Wire Wire Line
 	4600 4250 4600 4300
-Text GLabel 7650 3500 2    50   Input ~ 0
+Text GLabel 5100 2150 2    50   Input ~ 0
 MOSI
 Wire Wire Line
-	7600 3500 7650 3500
+	5050 2150 5100 2150
 Text GLabel 5100 4150 0    50   Input ~ 0
 MOSI
 Wire Wire Line
