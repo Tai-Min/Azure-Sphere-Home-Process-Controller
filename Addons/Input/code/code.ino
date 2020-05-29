@@ -1,7 +1,14 @@
 #include "pins_arduino.h"
+#include <HCSR04.h>
 
 #define BYTES_PER_FRAME 6
 #define NUMBER_OF_INPUTS 1
+
+int triggerPin = 3;
+int echoPin = 4;
+UltraSonicDistanceSensor distanceSensor(triggerPin, echoPin);
+#define DISTANCE_MAX_CM 31.0
+#define DISTANCE_MIN_CM 0.0
 
 static const uint16_t crctable[256] =
 {
@@ -39,6 +46,19 @@ static const uint16_t crctable[256] =
   0xFBCF, 0xEA46, 0xD8DD, 0xC954, 0xBDEB, 0xAC62, 0x9EF9, 0x8F70
 };
 
+/* definitions external functions */
+double mapFloat(double x, double in_min, double in_max, double out_min, double out_max) {
+  if (in_max - in_min == 0)
+    return 0;
+  double val = (x - in_min) * (out_max - out_min) / (in_max - in_min) + out_min;
+  if (val > out_max)
+    val = out_max;
+  if (val < out_min)
+    val = out_min;
+
+  return val;
+}
+
 uint16_t CRC16(
   uint16_t crc,      // Seed for CRC calculation
   const void *c_ptr, // Pointer to byte array to perform CRC on
@@ -67,7 +87,7 @@ void setup (void)
   pinMode(MOSI, INPUT);
   pinMode(SCK, INPUT);
   SPCR |= _BV(SPE) | _BV(SPIE);
-  Serial.begin(115200);
+  //Serial.begin(115200);
 }
 
 volatile uint16_t crcs[NUMBER_OF_INPUTS] = {0};
@@ -99,25 +119,46 @@ ISR (SPI_STC_vect)
   }
 }
 
+double previousDistance = 0;
 void loop() {
   if (dataReady) {
-    //all measurements here
-    Serial.print("Index: ");
-    Serial.println(currentIndex);
+    //Serial.print("Index: ");
+    //Serial.println(currentIndex);
     for (uint8_t i = 0; i < NUMBER_OF_INPUTS; i++) {
 
       uint8_t vals[3];
       vals[0] = i;
       vals[1] = toLowByte(measurements[i]);
       vals[2] = toHighByte(measurements[i]);
-
+      //Serial.print("MEasurement: ");
+      //Serial.println(measurements[0]);
       crcs[i] = CRC16(2137, vals, 3);
 
-      if(i == currentIndex){
-        Serial.print("CRC: ");
-        Serial.println(crcs[i]);
-      }
+      //if(i == currentIndex){
+        //Serial.print("CRC: ");
+        //Serial.println(crcs[i]);
+      //}
     }
+    //measurements
     dataReady = false;
+    
+    double distance = distanceSensor.measureDistanceCm();
+
+    //filtering
+    distance = previousDistance + 0.2 * (distance - previousDistance);
+    previousDistance = distance;
+
+    //measure water level, not how much distance there is to the bottom
+    distance = DISTANCE_MAX_CM - distance;
+    
+    //saturation
+    if(distance > DISTANCE_MAX_CM)
+      distance = DISTANCE_MAX_CM;
+    if(distance < DISTANCE_MIN_CM)
+      distance = DISTANCE_MIN_CM;
+    cli();
+    measurements[0] = mapFloat(distance, DISTANCE_MIN_CM, DISTANCE_MAX_CM, 0.0, 65535.0);
+    sei();
+    //dataReady = false;
   }
 }

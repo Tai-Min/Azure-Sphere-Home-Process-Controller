@@ -235,7 +235,7 @@ static void setNetworkErrorLed(bool state) {
 
 static void setLedBar() {
 	struct InputPeriphConfig p = getInputPeriphConfig();
-	double err = GLOBAL_getSetpointValue(); //- GLOBAL_getProcessValue();
+	double err = GLOBAL_getSetpointValue() - GLOBAL_getProcessValue();
 	double den = fabs(p.inputMaxValue - p.inputMinValue);
 
 	if (den == 0) {

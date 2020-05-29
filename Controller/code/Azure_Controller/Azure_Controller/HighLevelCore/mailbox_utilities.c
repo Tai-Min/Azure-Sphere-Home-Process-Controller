@@ -56,7 +56,7 @@ void performTransaction(int size);
 /* declarations */
 int mailboxInit() {
     // Open a connection to the RTApp.
-    sockFd = Application_Socket(rtAppComponentId);
+    sockFd = Application_Connect(rtAppComponentId);
     if (sockFd == -1) {
         Log_Debug("ERROR: Unable to create socket: %d (%s)\n", errno, strerror(errno));
         return -1;
@@ -197,11 +197,11 @@ void controlConfigSave(struct InputPeriphConfig iconf, struct OutputPeriphConfig
 
     txBuf[0] = CONTROL_CONFIG_SAVE;
 
-    memcpy(txBuf, (uint8_t*)&iconf,  sizeof(struct InputPeriphConfig));
-    memcpy(txBuf + sizeof(struct InputPeriphConfig), (uint8_t*)&oconf, sizeof(struct OutputPeriphConfig));
-    memcpy(txBuf + sizeof(struct InputPeriphConfig) + sizeof(struct OutputPeriphConfig), (uint8_t*)&cconf, sizeof(struct ControllerConfig));
+    memcpy(txBuf + 1, (uint8_t*)&iconf,  sizeof(struct InputPeriphConfig));
+    memcpy(txBuf + 1 + sizeof(struct InputPeriphConfig), (uint8_t*)&oconf, sizeof(struct OutputPeriphConfig));
+    memcpy(txBuf + 1 + sizeof(struct InputPeriphConfig) + sizeof(struct OutputPeriphConfig), (uint8_t*)&cconf, sizeof(struct ControllerConfig));
 
-    performTransaction(1);
+    performTransaction(1 + sizeof(struct InputPeriphConfig) + sizeof(struct OutputPeriphConfig) + sizeof(struct ControllerConfig));
 
     pthread_mutex_unlock(&mailboxMtx);
 }

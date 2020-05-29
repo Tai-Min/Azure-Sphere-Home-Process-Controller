@@ -65,7 +65,7 @@ void setup (void)
   pinMode(SCK, INPUT);
   pinMode(6, OUTPUT);
   SPCR |= _BV(SPE) | _BV(SPIE);
-  Serial.begin(115200);
+  //Serial.begin(115200);
 }
 
 volatile uint16_t controlValues[NUMBER_OF_OUTPUTS] = {0};
@@ -103,10 +103,10 @@ ISR (SPI_STC_vect)
 
 void loop() {
   if (dataReady) {
-    Serial.print("Current index: ");
+    /*Serial.print("Current index: ");
     Serial.println(currentIndex);
     Serial.print("Value: ");
-    Serial.println(controlValues[currentIndex]);
+    Serial.println(controlValues[currentIndex]);*/
     
     //check crc
     uint8_t vals[3];
@@ -117,11 +117,11 @@ void loop() {
     uint16_t computedCRC = CRC16(2137, vals, 3);
     
     if (receivedCRC != computedCRC) {
-      Serial.print("Received crc: ");
+      /*Serial.print("Received crc: ");
       Serial.println(receivedCRC);
       Serial.print("Computed crc: ");
       Serial.println(computedCRC);
-      Serial.println("transaction error");
+      Serial.println("transaction error");*/
       transactionGood = false;
 
       for(uint8_t i = 0; i < NUMBER_OF_OUTPUTS; i++){
@@ -133,7 +133,7 @@ void loop() {
     else {
       transactionGood = true;
       /* all control here */
-      analogWrite(6, map(controlValues[currentIndex], 0, pow(2, sizeof(uint16_t))-1, 0, 255));
+      analogWrite(6, map(controlValues[currentIndex], 0, 65535, 0, 255));
       /* */
       
       controlValues[currentIndex] = 0;

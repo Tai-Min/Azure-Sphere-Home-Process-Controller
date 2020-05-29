@@ -62,7 +62,7 @@ void initConfig() {
 	if (!isEEPROMInitialized()) {
 		struct MQTTConfig c = {
 			.processValueTopic = "PV\0",
-			.setpointTopic = "SV\0",
+			.setpointTopic = "SP\0",
 			.brokerIPAddress = "255.255.255.255\0"
 		};
 		writeInputConfigToEEPROM(inputConfig);
@@ -95,6 +95,14 @@ struct MQTTConfig getMQTTConfig() {
 
 void setInputPeriphConfig(struct InputPeriphConfig inputConf) {
 	inputConfig = inputConf;
+	double sp = GLOBAL_getSetpointValue();
+	if (sp > inputConf.inputMaxValue)
+		sp = inputConf.inputMaxValue;
+	if (sp < inputConf.inputMinValue)
+		sp = inputConf.inputMinValue;
+
+	GLOBAL_setSetpointValue(sp);
+
 	writeInputConfigToEEPROM(inputConf);
 }
 

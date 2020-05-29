@@ -1,5 +1,5 @@
 #include "global_state.h"
-
+#include "config.h"
 static struct GlobalState {
 	struct IPAddress ipAddress;
 	enum CurrentDisplayState displayState;
@@ -68,7 +68,18 @@ bool GLOBAL_getNetworkErrorFlag() { return globalState.isNetworkError; }
 void GLOBAL_setMQTTErrorFlag(bool state) { globalState.isMQTTError = state; }
 bool GLOBAL_getMQTTErrorFlag() { return globalState.isMQTTError; }
 
-void GLOBAL_setSetpointValue(double val) { globalState.setpointValue = val; }
+void GLOBAL_setSetpointValue(double val) { 
+	struct InputPeriphConfig iconf = getInputPeriphConfig();
+	double max = iconf.inputMaxValue;
+	double min = iconf.inputMinValue;
+	if (val > max) {
+		val = max;
+	}
+	if (val < min) {
+		val = min;
+	}
+	globalState.setpointValue = (int16_t)val; 
+}
 double GLOBAL_getSetpointValue() { return globalState.setpointValue; }
 
 void GLOBAL_setProcessValue(double val) { globalState.processValue = val; }

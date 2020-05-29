@@ -115,7 +115,7 @@ void mailboxCallback() {
 		break;
 	case MQTT_CONFIG_SAVE:
 		printf("MQTT_CONFIG_SAVE\n");
-		saveMQTTConfig(rxData+1);
+		saveMQTTConfig(rxData + 1);
 		break;
 	case IP_ADDRESS_KEEP:
 		printf("IP_ADDRESS_KEEP\n");

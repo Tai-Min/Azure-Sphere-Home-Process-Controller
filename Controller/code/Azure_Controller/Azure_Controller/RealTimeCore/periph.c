@@ -116,7 +116,7 @@ bool PERIPH_readPeriphInput(uint16_t *input, uint8_t inputIndex) {
 	uint16_t receivedCRC = bytesToWord(rx[4], rx[5]);
 
 	bool res = true;
-
+	//printf("Received: %d, Computed: %d\n", receivedCRC, computedCRC);
 	if (computedCRC != receivedCRC) {
 		inputErrorCntr++;
 		res = false;

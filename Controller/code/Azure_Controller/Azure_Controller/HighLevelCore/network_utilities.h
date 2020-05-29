@@ -27,3 +27,11 @@ struct IPAddress getIPAddress();
 * @return Name of added network interface or empty string if there is no such interface.
 */
 const char* getSavedNetworkInterfaceName();
+
+/*
+* @brief Update user defined network with given credentials.
+* 
+* @param ssid SSID of user defined network.
+* @param psk PSK of user defined network.
+*/
+void updateUserDefinedNetwork(char* ssid, char* psk);

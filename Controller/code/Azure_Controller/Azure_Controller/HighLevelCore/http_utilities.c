@@ -251,15 +251,15 @@ void httpRequestHandler() {
             if (client_fd != -1) {
                 Log_Debug("Client connected\n");
                 bool err = false;
-                char content[1024];
-                int bytesRead = readResponse(client_fd, content, 1024, &err);
+                char content[2048];
+                int bytesRead = readResponse(client_fd, content, 2048, &err);
 
                 if (!err) {
                     char type[8] = { 0 };
                     char siteLocation[21] = { 0 };
                     bool hasParams = false;
-                    char argKeys[19][31] = { 0 };
-                    char argValues[19][31] = { 0 };
+                    char argKeys[20][31] = { 0 };
+                    char argValues[20][31] = { 0 };
 
                     parseContent(content, bytesRead, type, siteLocation, &hasParams, argKeys, argValues, &err);
                     if (!err) {

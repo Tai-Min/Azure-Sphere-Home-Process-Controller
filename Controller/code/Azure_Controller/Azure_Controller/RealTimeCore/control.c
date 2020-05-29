@@ -75,14 +75,14 @@ void CONTROL_controlTask(void* pParams) {
 	PERIPH_initPeriphCommunication();
 
 	while (1) {
-		long long start = millis();
+		unsigned long long start = millis();
 		readProcessValue();
 
 		performControlAlgorithm();
 
 		writeControlValue();
 
-		long long passed = millis() - start;
+		int passed = millis() - start;
 		// just in case if reading/writting takes too long for some reason
 		if (passed <= CONTROL_LOOP_SAMPLING_TIME) {
 			vTaskDelay(pdMS_TO_TICKS(CONTROL_LOOP_SAMPLING_TIME - passed));
@@ -98,16 +98,16 @@ static uint8_t readProcessValue() {
 	// do until read succeeded or periph failure 
 	while (!res && !PERIPH_isPeriphConnectionError()) {
 		res = PERIPH_readPeriphInput(&value, 0);
-		vTaskDelay(pdMS_TO_TICKS(1));// needed sometimes for "SPI" peripheral
+		//vTaskDelay(pdMS_TO_TICKS(1));// needed sometimes for "SPI" peripheral
 	}
-	GLOBAL_setProcessValue(map(value, 0, sizeof(uint16_t)-1, getInputPeriphConfig().inputMinValue, getInputPeriphConfig().inputMaxValue));
-
+	GLOBAL_setProcessValue(map(value, 0, 65535, getInputPeriphConfig().inputMinValue, getInputPeriphConfig().inputMaxValue));
+	printf("GLOBAL PV: %f\n", GLOBAL_getProcessValue());
 	return 0;
 }
 
 static uint8_t writeControlValue() {
-	double value = map(GLOBAL_getControlValue(), getOutputPeriphConfig().outputMinValue, getOutputPeriphConfig().outputMaxValue, 0, sizeof(uint16_t) - 1);
-	double minValue = map(getOutputPeriphConfig().outputMinValue, getOutputPeriphConfig().outputMinValue, getOutputPeriphConfig().outputMaxValue, 0, sizeof(uint16_t) - 1);
+	double value = map(GLOBAL_getControlValue(), getOutputPeriphConfig().outputMinValue, getOutputPeriphConfig().outputMaxValue, 0, 65535);
+	double minValue = map(getOutputPeriphConfig().outputMinValue, getOutputPeriphConfig().outputMinValue, getOutputPeriphConfig().outputMaxValue, 0, 65535);
 
 	bool res = false;
 
@@ -122,7 +122,7 @@ static uint8_t writeControlValue() {
 		else {
 			res = PERIPH_writePeriphOutput(value, 0);
 		}
-		vTaskDelay(pdMS_TO_TICKS(1));
+		//vTaskDelay(pdMS_TO_TICKS(1));
 	}
 
 	return 0;

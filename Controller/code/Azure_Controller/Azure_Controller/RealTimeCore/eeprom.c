@@ -9,16 +9,16 @@
 #define USAGE_BIT 0
 
 #define CONTROLLER_CONF_FIRST_BYTE (USAGE_BIT + 1)
-#define CONTROLLER_CONF_LAST_BYTE (sizeof(struct ControllerConfig) + CONTROLLER_CONF_FIRST_BYTE - 1)
+#define CONTROLLER_CONF_LAST_BYTE (sizeof(struct ControllerConfig) + CONTROLLER_CONF_FIRST_BYTE)
 
 #define INPUT_CONF_FIRST_BYTE (CONTROLLER_CONF_LAST_BYTE + 1)
-#define INPUT_CONF_LAST_BYTE (sizeof(struct InputPeriphConfig) + INPUT_CONF_FIRST_BYTE - 1)
+#define INPUT_CONF_LAST_BYTE (sizeof(struct InputPeriphConfig) + INPUT_CONF_FIRST_BYTE)
 
 #define OUTPUT_CONF_FIRST_BYTE (INPUT_CONF_LAST_BYTE + 1)
-#define OUTPUT_CONF_LAST_BYTE (sizeof(struct OutputPeriphConfig) + OUTPUT_CONF_FIRST_BYTE - 1)
+#define OUTPUT_CONF_LAST_BYTE (sizeof(struct OutputPeriphConfig) + OUTPUT_CONF_FIRST_BYTE)
 
 #define MQTT_CONF_FIRST_BYTE (OUTPUT_CONF_LAST_BYTE + 1)
-#define MQTT_CONF_LAST_BYTE (sizeof(struct MQTTConfig) + MQTT_CONF_FIRST_BYTE - 1)
+#define MQTT_CONF_LAST_BYTE (sizeof(struct MQTTConfig) + MQTT_CONF_FIRST_BYTE)
 
 #define EEPROM_CONTROL_CODE 0b01010000
 
@@ -162,7 +162,7 @@ void writeInputConfigToEEPROM(struct InputPeriphConfig inputConf) {
 
 	for (uint8_t i = 0; i < 1 + sizeof(struct InputPeriphConfig); i++) {
 		rxBuf[0] = INPUT_CONF_FIRST_BYTE + i;
-		memcpy(rxBuf+1, (uint8_t*)&inputConf +i, 1);
+		memcpy(rxBuf + 1, (uint8_t*)&inputConf +i, 1);
 		mtk_os_hal_i2c_write(i2cNum, EEPROM_CONTROL_CODE, rxBuf, 2);
 		vTaskDelay(pdMS_TO_TICKS(10));
 	}

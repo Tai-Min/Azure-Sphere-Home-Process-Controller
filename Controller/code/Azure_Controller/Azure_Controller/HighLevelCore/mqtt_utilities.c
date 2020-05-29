@@ -11,6 +11,7 @@
 #include "stdbool.h"
 #include <errno.h>
 #include <poll.h>
+#include <stdlib.h>
 #include "common.h"
 
 static void emptyCallback(const char* topic, const char* msg) {};
@@ -161,7 +162,20 @@ void MQTTRegisterSubscribeCallback(void(*cb)(const char* topic, const char* msg)
 /* declarations helpers*/
 
 static void publish_callback(void** unused, struct mqtt_response_publish* published) {
-	subCallback("a", "b");
+
+	char* topic = malloc(published->topic_name_size + 1);
+	memcpy(topic, published->topic_name, published->topic_name_size);
+	topic[published->topic_name_size] = '\0';
+
+	char* msg = malloc(published->application_message_size + 1);
+	memcpy(msg, published->application_message, published->application_message_size);
+	msg[published->application_message_size] = '\0';
+
+	subCallback(topic, msg);
+
+	free(topic);
+	free(msg);
+
 	return;
 }
 

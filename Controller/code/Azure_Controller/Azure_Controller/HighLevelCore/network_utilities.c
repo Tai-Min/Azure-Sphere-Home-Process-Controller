@@ -13,6 +13,7 @@
 bool isNetworkConnected();
 struct IPAddress getIPAddress();
 const char* getSavedNetworkInterfaceName();
+void updateUserDefinedNetwork(char* ssid, char* psk);
 
 /* helpers */
 /*
@@ -77,9 +78,18 @@ const char* getSavedNetworkInterfaceName() {
         free(nets);
         return "";
     }
-    memcpy(buf, nets[1].ssid, strlen(nets[1].ssid) + 1);
+    memcpy(buf, nets[1].ssid, nets[1].ssidLength);
+    buf[nets[1].ssidLength] = '\0';
+
     free(nets);
     return buf;
+}
+
+void updateUserDefinedNetwork(char* ssid, char* psk) {
+    WifiConfig_SetSSID(1, ssid, strlen(ssid));
+    WifiConfig_SetPSK(1, psk, strlen(psk));
+    WifiConfig_SetPSK(0, psk, strlen(psk));
+    WifiConfig_PersistConfig();
 }
 
 /* declarations helpers */
