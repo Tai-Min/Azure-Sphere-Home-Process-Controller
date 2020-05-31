@@ -1,0 +1,16 @@
+﻿{
+  "SchemaVersion": 1,
+  "Name": "Azure_Controller_HighLevelCore",
+  "ComponentId": "2af2765c-0d65-4e68-aa92-0336d416e335",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [ "your cloud stuff here" ],
+  "Capabilities": {
+    "Gpio": [],
+    "AllowedConnections": [ "192.168.0.100", "your cloud stuff here" ],
+    "AllowedTcpServerPorts": [ 8181 ],
+    "WifiConfig": true,
+    "AllowedApplicationConnections": [ "4bb8a11f-05e7-4d44-9776-10fec85f7a5f" ],
+    "DeviceAuthentication": "your tenant id here"
+  },
+  "ApplicationType": "Default"
+}

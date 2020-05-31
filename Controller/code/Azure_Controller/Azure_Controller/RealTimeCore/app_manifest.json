@@ -1,0 +1,15 @@
+﻿{
+  "SchemaVersion": 1,
+  "Name": "Azure_Controller_RealTimeCore",
+  "ComponentId": "4bb8a11f-05e7-4d44-9776-10fec85f7a5f",
+  "EntryPoint": "/bin/app",
+  "CmdArgs": [],
+  "Capabilities": {
+    "AllowedApplicationConnections": [ "2af2765c-0d65-4e68-aa92-0336d416e335" ],
+    "Adc": [ "ADC-CONTROLLER-0" ],
+    //"SpiMaster": [ "ISU1" ],
+    "I2cMaster": [ "ISU2" ],
+    "Gpio": [ 0, 1, 2, 16, 17, 26, 28 , 31, 32, 33, 34, 35 ]
+  },
+  "ApplicationType": "RealTimeCapable"
+}
