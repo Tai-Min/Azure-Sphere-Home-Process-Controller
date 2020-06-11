@@ -12,7 +12,7 @@ void SPIInit();
 void SPITransfer(int num, uint8_t* rx, uint8_t* tx, uint8_t cs);
 
 /* helpers */
-/*
+/**
 * @brief Transfer one byte through software SPI
 *
 * @param toSlave Byte that will be transferred to slave device.

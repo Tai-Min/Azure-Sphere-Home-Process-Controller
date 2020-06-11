@@ -1,5 +1,10 @@
 /*
     This source code comes from Git repository
+    https://github.com/Azure/azure-sphere-samples at commit id 37eed9a
+*/
+
+/*
+    This source code comes from Git repository
     https://github.com/kgabis/parson at commit id 4f3eaa6
     Patched to avoid any usage of fopen(), and removed implicit
     cast warnings by making them explicit.

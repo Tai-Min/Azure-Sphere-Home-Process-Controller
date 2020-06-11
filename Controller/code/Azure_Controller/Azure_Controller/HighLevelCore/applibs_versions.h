@@ -1,4 +1,9 @@
-﻿#pragma once
+﻿/*
+    This source code comes from Git repository
+    https://github.com/Azure/azure-sphere-samples at commit id 37eed9a
+*/
+
+#pragma once
 
 /// <summary>
 /// This identifier should be defined before including any of the networking-related header files.

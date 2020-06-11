@@ -30,75 +30,75 @@ static uint16_t ledRegisterData = 0;
 void LED_ledTask(void* pParams);
 
 /* helpers */
-/*
+/**
 * @brief Set one of three indicator leds: SP, KNOB, IP. Clears other leds.
 *
 * @param led Led to be set.
 */
 static void setCurrentIndicatorLed(enum CurrentDisplayState led);
 
-/*
+/**
 * @brief Set or clear setpoint indicator led.
 * 
 * @param state Whether turn in on or off.
 */
 static void inline setSetpointLed(bool state);
 
-/*
+/**
 * @brief Set or clear knob indicator led.
 *
 * @param state Whether turn in on or off.
 */
 static void inline setKnobLed(bool state);
 
-/*
+/**
 * @brief Set or clear IP address indicator led.
 *
 * @param state Whether turn in on or off.
 */
 static void inline setIPAddressLed(bool state);
 
-/*
+/**
 * @brief Set or clear periph error indicator led.
 *
 * @param state Whether turn in on or off.
 */
 static void setPeriphErrorLed(bool state);
 
-/*
+/**
 * @brief Set or clear MQTT error indicator led.
 *
 * @param state Whether turn in on or off.
 */
 static void setMQTTErrorLed(bool state);
 
-/*
+/**
 * @brief Set or clear network error indicator led.
 *
 * @param state Whether turn in on or off.
 */
 static void setNetworkErrorLed(bool state);
 
-/*
+/**
 * @brief Update led bar depending on control's error.
 */
 static void setLedBar();
 
-/*
+/**
 * @brief Set number of led's in led bar depending on percentage value.
 *
 * @param _barValue Value between -100 and 100 where -100 means that bottom half of led bar is lit and 100 means that top half is lit.
 */
 static void setLedBarValueInPercent(int8_t _barValue);
 
-/*
+/**
 * @brief Translate given input into uint16_t value where first ten bits describe state of the led bar. 6 next bits are set to 0.
 *
 * @return Led bar's state as bits.
 */
 static uint16_t ledBarValueToRegisterBits(int8_t _barValue);
 
-/*
+/**
 * @brief Sets index number of bits in given uint16_t value depending on given index. 
 *
 * Sets bits in positive half of led bar so it appears like: 0 - no leds lit, 5 - all five positive led bars lit.
@@ -108,7 +108,7 @@ static uint16_t ledBarValueToRegisterBits(int8_t _barValue);
 */
 static void inline setLedBarPositiveLightBit(uint16_t* _ledBarBits, uint8_t num);
 
-/*
+/**
 * @brief Sets index number of bits in given uint16_t value depending on given index.
 *
 * Sets bits in negative half of led bar so it appears like: 0 - no leds lit, 5 - all five negative led bars lit.
@@ -118,27 +118,27 @@ static void inline setLedBarPositiveLightBit(uint16_t* _ledBarBits, uint8_t num)
 */
 static void inline setLedBarNegativeLightBit(uint16_t* _ledBarBits, uint8_t num);
 
-/*
+/**
 * @brief Write uint16_t word to physical registers.
 */
 static void writeLedDataToRegisters();
 
-/*
+/**
 * @brief Perform fast clock tick on clock GPIO.
 */
 static void oneRegisterClockTick();
 
-/*
+/**
 * @brief Clear latch GPIO.
 */
 static void inline startRegisterDataTransfer();
 
-/*
+/**
 * @brief Set latch GPIO.
 */
 static void inline finishRegisterDataTransfer();
 
-/*
+/**
 * @brief Returns state of bit in ledRegisterData.
 * 
 * @param index Index of bit between 0 - 15.

@@ -46,7 +46,7 @@ void controlConfigLoad(struct InputPeriphConfig* iconf, struct OutputPeriphConfi
 void controlConfigSave(struct InputPeriphConfig iconf, struct OutputPeriphConfig oconf, struct ControllerConfig cconf);
 
 /* helper functions */
-/*
+/**
 * @brief Communicate with rt core
 *
 * @param size Number of bytes in txBuf to be sent.

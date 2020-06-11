@@ -1,6 +1,6 @@
 #pragma once
 
-/*
+/**
 * @brief MQTT config structure.
 */
 struct MQTTConfig {
@@ -9,7 +9,7 @@ struct MQTTConfig {
 	char brokerIPAddress[16];
 };
 
-/*
+/**
 * @brief Available controllers.
 */
 enum ControllerType {
@@ -18,7 +18,7 @@ enum ControllerType {
 	PID
 };
 
-/*
+/**
 * @brief Config structure of input peripheral.
 */
 struct InputPeriphConfig {
@@ -26,7 +26,7 @@ struct InputPeriphConfig {
 	double inputMaxValue;
 };
 
-/*
+/**
 * @brief Config structure of output peripheral.
 */
 struct OutputPeriphConfig {
@@ -34,7 +34,7 @@ struct OutputPeriphConfig {
 	double outputMaxValue;
 };
 
-/*
+/**
 * @brief Config structure of two state controller.
 */
 struct TwoStateConfig {
@@ -44,7 +44,7 @@ struct TwoStateConfig {
 	double topSwitchBoundary;
 };
 
-/*
+/**
 * @brief Config structure of PID controller.
 */
 struct PIDConfig {
@@ -55,7 +55,7 @@ struct PIDConfig {
 	double saturationLower;
 };
 
-/*
+/**
 * @brief Union that holds config of every available controller.
 */
 union ControllerConfigUnion {
@@ -63,7 +63,7 @@ union ControllerConfigUnion {
 	struct PIDConfig PIDConfig;
 };
 
-/*
+/**
 * @brief Universal controller config structure.
 */
 struct ControllerConfig {

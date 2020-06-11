@@ -40,17 +40,17 @@ struct ControllerConfig getSelectedControllerConfig();
 void setUsedController(struct ControllerConfig conf);
 
 /* helpers */
-/*
+/**
 * @brief Set controller's config to none.
 */
 static void useNoController();
 
-/*
+/**
 * @brief Set controller's config to two state.
 */
 static void useTwoStateController(struct TwoStateConfig controlConf);
 
-/*
+/**
 * @brief Set controller's config to pid.
 */
 static void usePIDController(struct PIDConfig controlConf);

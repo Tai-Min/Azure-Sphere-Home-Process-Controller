@@ -2,19 +2,19 @@
 
 #include <stdint.h>
 
-/*
+/**
 * @brief Init pseudo SPI GPIO
 */
 void PERIPH_initPeriphCommunication();
 
-/*
+/**
 * @brief Check whether communication failed with periph for n times in a row.
 *
 * @return True if communication failed.
 */
 bool PERIPH_isPeriphConnectionError();
 
-/*
+/**
 * @brief Get data from input periph board (left side of the controller looking from front).
 *
 * @param input Value where received input should be written to.
@@ -23,7 +23,7 @@ bool PERIPH_isPeriphConnectionError();
 */
 bool PERIPH_readPeriphInput(uint16_t* input, uint8_t inputIndex);
 
-/*
+/**
 * @brief Write data to output periph board (right side of the controller looking from front).
 *
 * @param output Value to write.

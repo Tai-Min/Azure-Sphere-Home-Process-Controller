@@ -50,7 +50,7 @@ bool PERIPH_readPeriphInput(uint16_t *input, uint8_t inputIndex);
 bool PERIPH_writePeriphOutput(uint16_t output, uint8_t outputIndex);
 
 /* helpers */
-/*
+/**
 * @brief Merge two bytes into a word.
 *
 * @param lb Low byte.
@@ -59,7 +59,7 @@ bool PERIPH_writePeriphOutput(uint16_t output, uint8_t outputIndex);
 */
 static uint16_t bytesToWord(uint8_t lb, uint8_t hb);
 
-/*
+/**
 * @brief Get high byte from given word.
 * 
 * @param word A word.
@@ -67,7 +67,7 @@ static uint16_t bytesToWord(uint8_t lb, uint8_t hb);
 */
 static uint8_t wordGetHighByte(int16_t word);
 
-/*
+/**
 * @brief Get low byte from given word.
 *
 * @param word A word.
@@ -75,7 +75,7 @@ static uint8_t wordGetHighByte(int16_t word);
 */
 static uint8_t wordGetLowByte(int16_t word);
 
-/*
+/**
 * @brief Compute CRC from given array.
 *
 * @param crc CRC polynominal.

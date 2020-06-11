@@ -35,48 +35,48 @@ static const char* ok = 'OK\n';
 void MAILBOX_mailboxTask(void* pParam);
 
 /* helpers */
-/*
+/**
 * @brief Called when data is received from high level core, processes the data and responds if necessary.
 */
 void mailboxCallback();
 
-/*
+/**
 * @brief Responds with MQTT config.
 */
 void respondWithMQTTConfig();
 
-/*
+/**
 * @brief Saves received MQTT config to EEPROM.
 *
 * @param rxData MQTT config in bytes.
 */
 void saveMQTTConfig(char* rxData);
 
-/*
+/**
 * @brief Saves received IP Address to GLOBAL structure.
 *
 * @param rxData IP address in bytes.
 */
 void keepIPAddress(char* rxData);
 
-/*
+/**
 * @brief Responds with GLOBAL setpoint and process value.
 */
 void sendSpPv();
 
-/*
+/**
 * @brief Sets GLOBAL setpoint with value received from high level core.
 *
 * @param rxData setpoint in bytes.
 */
 void setSp(char* rxData);
 
-/*
+/**
 * @brief Responds with control config (inputs, outputs, controller).
 */
 void loadControlConfig();
 
-/*
+/**
 * @brief Saves received control config (inputs, outputs, controller) to EEPROM.
 *
 * @param rxData control config in bytes.

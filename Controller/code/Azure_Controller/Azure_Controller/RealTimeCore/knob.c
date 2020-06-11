@@ -26,50 +26,50 @@ static long long knobDisplayTimestamp = 0;
 void KNOB_knobTask(void* pParams);
 
 /* helpers */
-/*
+/**
 * @brief Returns knob's value from previous reading.
 * 
 * @return Knob's value from previous reading.
 */
 static uint16_t getKnobValue();
 
-/*
+/**
 * @brief Get knob's value mapped to input peripheral boundaries.
 *
 * @return Knob's value mapped to input peripheral boundaries.
 */
 static int16_t getKnobValueInInputPeriphRange();
 
-/*
+/**
 * @brief Returns true if knob's value has changed by KNOB_MAX_DIFFERENCE margin.
 *
 * @return True if knob's value has changed by KNOB_MAX_DIFFERENCE margin.
 */
 static bool knobValueChanged();
 
-/*
+/**
 * @brief Ignore if knob value has changed. Useful to ignore change when IP address is currently displayed.
 */
 static void dimissKnobValueChange();
 
-/*
+/**
 * @brief Read knob's ADC channel.
 */
 static void getKnobCurrentValue();
 
-/*
+/**
 * @brief Get how much knob's value has changed between readings.
 *
 * @return The difference.
 */
 static uint16_t inline getKnobValueDifference();
 
-/*
+/**
 * @brief Check if knob's value has changed by KNOB_MAX_DIFFERENCE and set adequate flag.
 */
 static void checkKnobForChange();
 
-/*
+/**
 * @brief Returns true if some time has passed without change of knob's value.
 */
 static bool knobTimeout();

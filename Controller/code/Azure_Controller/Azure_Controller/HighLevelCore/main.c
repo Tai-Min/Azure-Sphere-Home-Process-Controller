@@ -40,27 +40,27 @@ static volatile sig_atomic_t exitCode = ExitCode_Success;
 
 int main(int argc, char* argv[]);
 
-/*
+/**
 * @brief Signal handler for termination requests.
 * 
 * @param signalNumber Unused.
 */
 static void TerminationHandler(int signalNumber);
 
-/*
+/**
 * @brief Init event loop, timers, mailbox and http server.
 *
 * @return ExitCode_Success on success, other ExitCode on failure.
 */
 static ExitCode InitHandlers(void);
 
-/*
+/**
 * @brief Close event loop, dispose timers, close MQTT, HTTP server and mailbox.
 */
 static void CloseHandlers(void);
 
 /* cloud */
-/*
+/**
 * @brief Periodically called to send diagnostic info to Azure cloud services.
 *
 * @param timer Pointer to timer to consume and restart.
@@ -71,7 +71,7 @@ static int telemetryCount = 0;
 static struct timespec azureTelemetryPeriod;
 
 /* website */
-/*
+/**
 * @brief Callback received from HTTP server when GET method has been received.
 *
 * @param siteLocation String that contains site location. i.e /config.
@@ -81,7 +81,7 @@ static struct timespec azureTelemetryPeriod;
 */
 static const char* HTTP_GET_MethodCallback(char siteLocation[21], bool hasParams, char argKeys[20][31], char argValues[20][31]);
 
-/*
+/**
 * @brief Parse params received from GET request
 *
 * @param argKeys Keys from key-value pair passed to GET method after ? symbol.
@@ -90,14 +90,14 @@ static const char* HTTP_GET_MethodCallback(char siteLocation[21], bool hasParams
 static void parseGETParams(char argKeys[20][31], char argValues[20][31]);
 
 /* mqtt */
-/*
+/**
 * @brief Periodically called to send setpoint and process value to MQTT broker.
 *
 * @param timer Pointer to timer to consume and restart.
 */
 static void mqttPublishTimerEventHandler(EventLoopTimer* timer);
 
-/*
+/**
 * @brief Called when device receives data from subscribed setpoint topic.
 * 
 * @param topic Name of topic from which message has come.

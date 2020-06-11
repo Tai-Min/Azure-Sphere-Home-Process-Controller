@@ -1,3 +1,8 @@
+/*
+    This source code comes from Git repository
+    https://github.com/Azure/azure-sphere-samples at commit id 37eed9a
+*/
+
 /* Copyright (c) Microsoft Corporation. All rights reserved.
    Licensed under the MIT License. */
 

@@ -37,7 +37,7 @@ bool httpIsServerUp();
 void registerGETCallback(const char* (*cb)(char siteLocation[21], bool hasParams, char argKeys[20][31], char argValues[20][31]));
 
 /* helpers */
-/*
+/**
 * @brief Read available response from client file descriptor.
 *
 * @param fd File descriptor of a client.
@@ -48,7 +48,7 @@ void registerGETCallback(const char* (*cb)(char siteLocation[21], bool hasParams
 */
 int readResponse(int fd, char* bytes, int size, bool* err);
 
-/*
+/**
 * @brief Parse content of client's request into type of request, site location and key-value pairs
 *
 * @param content Content to parse.
@@ -61,7 +61,7 @@ int readResponse(int fd, char* bytes, int size, bool* err);
 */
 void parseContent(char* content, int len, char type[8], char siteLocation[21], bool* hasParams, char argKeys[20][31], char argValues[20][31], bool* err);
 
-/*
+/**
 * @brief Main function of http server's subthread.
 */
 void httpRequestHandler();

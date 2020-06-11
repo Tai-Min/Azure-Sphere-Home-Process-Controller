@@ -42,7 +42,7 @@ int MQTTPublish(const char* topic, const char* msg);
 void MQTTRegisterSubscribeCallback(void(*cb)(const char*topic, const char* msg));
 
 /* helpers */
-/*
+/**
 * @brief Called when message is received from MQTT topic.
 * 
 * @param unused Unused.
@@ -50,14 +50,14 @@ void MQTTRegisterSubscribeCallback(void(*cb)(const char*topic, const char* msg))
 */
 static void publish_callback(void** unused, struct mqtt_response_publish* published);
 
-/*
+/**
 * @brief Main function of MQTT refresher subthread.
 *
 * @param client Pointer to MQTT client.
 */
 static void client_refresher(void* client);
 
-/*
+/**
 * @brief Open a non blocking socket.
 *
 * @param addr IP address of server to connect.

@@ -16,7 +16,7 @@ const char* getSavedNetworkInterfaceName();
 void updateUserDefinedNetwork(char* ssid, char* psk);
 
 /* helpers */
-/*
+/**
 * @brief Translate given IPv4 string into IPAddress struct.
 *
 * @param strip IP address as string.

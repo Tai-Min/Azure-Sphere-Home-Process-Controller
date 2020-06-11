@@ -5,12 +5,12 @@
 /* Poor man's software SPI */
 /* As hardware SPI has conflict with board's wifi for some reason */
 
-/*
+/**
 * @brief Init software SPI.
 */
 void SPIInit();
 
-/*
+/**
 * @brief Perform simple transfer on software SPI.
 *
 * @param num Number of bytes to transfer.

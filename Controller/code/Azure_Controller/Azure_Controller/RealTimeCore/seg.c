@@ -36,19 +36,19 @@ static int16_t displayedValue = 0;
 void SEG_displayTask(void* pParams);
 
 /* helpers */
-/*
+/**
 * @brief Set value between -999 and 999 to be displayed on 7 segment display.
 * 
 * @param Value to be displayed.
 */
 static void setDisplayedValue(int16_t _value);
 
-/*
+/**
 * @brief Display whole IP Address received from GLOBAL structure on display.
 */
 static void displayIPAddress();
 
-/*
+/**
 * @brief Returns last digit from given value. i.e returns 9 from 129.
 *
 * @param val Value from which return last digit.
@@ -56,7 +56,7 @@ static void displayIPAddress();
 */
 static uint8_t getLastDigitFromValue(int16_t val);
 
-/*
+/**
 * @brief Remove last digit from given value. i.e returns 12 from 129.
 *
 * @param val Value from which remove digit.
@@ -64,53 +64,53 @@ static uint8_t getLastDigitFromValue(int16_t val);
 */
 static int16_t inline removeLastDigitFromValue(int16_t val);
 
-/*
+/**
 * @brief Returns how much digits has displayedValue.
 *
 * @return Number of digits in displayedValue.
 */
 static uint8_t inline howManyDigitsInDisplayedValue();
 
-/*
+/**
 * @brief Do start GPIO sequence.
 */
 static void startWriteDataToDisplay();
 
-/*
+/**
 * @brief Do stop GPIO sequence.
 */
 static void stopWriteDataToDisplay();
 
-/*
+/**
 * @brief Do write GPIO sequence.
 *
 * @param val Bit to write.
 */
 static void writeBitToDisplay(bool val);
 
-/*
+/**
 * @brief Write eight bits to display's memory.
 *
 * @param Value to write.
 */
 static void writeByteToDisplay(int16_t _value);
 
-/*
+/**
 * @brief Write to display content of displayValue without sign.
 */
 static void writeDisplayedValueNoSign();
 
-/*
+/**
 * @brief Write to display sign of displayValue - if displayValue is negative empty otherwise.
 */
 static void writeSignOfDisplayedValue();
 
-/*
+/**
 * @brief Write emties after displayValue, used to clear previous displayed content.
 */
 static void writeEmptiesAfterSign();
 
-/*
+/**
 * @brief Perform all the stuff necessary to write a value to 7 segment display.
 */
 static void writeValueToDisplay();

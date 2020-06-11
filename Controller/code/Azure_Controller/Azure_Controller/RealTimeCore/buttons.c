@@ -12,12 +12,12 @@ static const os_hal_gpio_pin ipButtonGpio = OS_HAL_GPIO_2;
 void buttonTask(void* pParams);
 
 /* helpers */
-/*
+/**
 * @brief Check SP button's state and on press, if knob led is set then change global setpoint to knob's value and set setpoint led.
 */
 void processSetpointApplyButton();
 
-/*
+/**
 * @brief Check IP button's state and on press set ip led.
 */
 void processIPButton();

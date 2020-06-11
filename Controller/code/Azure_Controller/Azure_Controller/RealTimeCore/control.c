@@ -12,14 +12,14 @@
 
 #define CONTROL_LOOP_SAMPLING_TIME 50
 
-/*
+/**
 * @brief Internal state of two state controller.
 */
 struct TwoStateInternalState {
 	bool isOn;
 };
 
-/*
+/**
 * @brief Internal state of pid controller.
 */
 struct PIDInternalState {
@@ -27,7 +27,7 @@ struct PIDInternalState {
 	double previousError;
 };
 
-/*
+/**
 * @brief Union that holds internal state of every available controller.
 */
 static union ControllerInternalState {
@@ -41,27 +41,27 @@ static union ControllerInternalState controller;
 void CONTROL_controlTask(void* pParams);
 
 /* helpers */
-/*
+/**
 * @brief Reads value from input peripheral board, maps it to boundary defined in input periph config and writes it to GLOBAL structure as process value.
 */
 static uint8_t readProcessValue();
 
-/*
+/**
 * @brief Writes control value from GLOBAL structure mapped from output periph's config to uint16_t range into output peripheral board. 
 */
 static uint8_t writeControlValue();
 
-/*
+/**
 * @brief Classic two state control with hysteresis and writes result to GLOBAL structure as control value.
 */
 static void performTwoStateControl();
 
-/*
+/**
 * @brief PID control with integral anti-windup. Writes result into GLOBAL structure as control value.
 */
 static void performPIDControl();
 
-/*
+/**
 * @brief Perform selected control algorithm.
 */
 static void performControlAlgorithm();
