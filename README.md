@@ -5,6 +5,6 @@ Industrial like PID / Two state process controller with web based configuration,
 
 This repository contains source code for both High level application and real time core of Azure Sphere board, source codes for Arduino expansion cards, electronic design files for KiCad, housing design files for Autodesk Inventor and STL files for 3d printing.
 
-For details how it was created and how to use it see: https://www.element14.com/community/groups/azuresphere/blog/2020/05/29/azure-sphere-home-process-controller
+For details how it was created and how to use it click [here](https://www.element14.com/community/groups/azuresphere/blog/2020/05/29/azure-sphere-home-process-controller)
 
 ![alt text](https://github.com/Tai-Min/Azure-Sphere-Home-Process-Controller/blob/master/cover.jpg "Controller image")
